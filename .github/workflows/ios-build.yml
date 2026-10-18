@@ -1,0 +1,43 @@
+
+name: Build PANIC iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          unzip -q PANIC_GitHub_Build_Files.zip -d extracted
+          ls -la extracted/panic_ready
+
+      - name: Build unsigned iOS app
+        run: |
+          xcodebuild \
+            -project extracted/panic_ready/PANIC/PANIC.xcodeproj \
+            -scheme PANIC \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R build/DerivedData/Build/Products/Release-iphoneos/PANIC.app build/Payload/
+          cd build
+          zip -r PANIC-unsigned.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: PANIC-unsigned-ipa
+          path: build/PANIC-unsigned.ipa
