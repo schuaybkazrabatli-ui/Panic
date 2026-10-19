@@ -366,25 +366,18 @@ document.addEventListener('click',e=>{
   pulseButton(button);
   if(soundOn)playSfx('tap');
 },{capture:true});
-// Full-screen touch steering: hold/touch anywhere on the left/right side to steer.
-// The arrow buttons remain compatible; releasing anywhere stops movement.
+// Hybrid controls: keep the dedicated hold-buttons AND restore drag/swipe steering on the playfield.
 const stage=document.getElementById('stage');
-['pointerdown','pointermove','pointerup','pointercancel','touchstart','touchmove','touchend'].forEach(ev=>c.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+let swipeActive=false,swipePointerId=null;
+function canvasX(e){const r=c.getBoundingClientRect();return ((e.clientX-r.left)/Math.max(1,r.width))*W;}
+function steerFromSwipe(e){const targetX=canvasX(e);const delta=targetX-x;keys=Math.abs(delta)<10?0:(delta<0?-1:1);}
+c.addEventListener('pointerdown',e=>{if(e.target!==c)return;e.preventDefault();swipeActive=true;swipePointerId=e.pointerId;try{c.setPointerCapture(e.pointerId)}catch(_){}if(!run||dead)startGame();steerFromSwipe(e)},{passive:false});
+c.addEventListener('pointermove',e=>{if(!swipeActive||e.pointerId!==swipePointerId)return;e.preventDefault();steerFromSwipe(e)},{passive:false});
+function endSwipe(e){if(!swipeActive)return;if(e&&swipePointerId!==null&&e.pointerId!==undefined&&e.pointerId!==swipePointerId)return;swipeActive=false;swipePointerId=null;keys=0;}
+c.addEventListener('pointerup',endSwipe);c.addEventListener('pointercancel',endSwipe);c.addEventListener('lostpointercapture',endSwipe);
+['touchstart','touchmove','touchend'].forEach(ev=>c.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 function bind(id,val){const b=document.getElementById(id);const down=e=>{e.preventDefault();keys=val;if(!run||dead)startGame()};const up=e=>{if(e)e.preventDefault();if(keys===val)keys=0};b.style.touchAction='none';b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);b.addEventListener('click',e=>{e.preventDefault();if(!run||dead)startGame();keys=val;setTimeout(()=>{if(keys===val)keys=0},140)});}
 bind('left',-1);bind('right',1);
-let screenSteerPointer=null;
-document.getElementById('game').addEventListener('pointerdown',e=>{
-  if(e.target.closest('button') && !['left','right'].includes(e.target.closest('button').id)) return;
-  if(e.target.closest('#panel')) return;
-  screenSteerPointer=e.pointerId;
-  const r=document.getElementById('game').getBoundingClientRect();
-  const x=e.clientX-r.left;
-  keys=(x<r.width/2)?-1:1;
-  if(!run||dead)startGame();
-},{passive:true});
-window.addEventListener('pointermove',e=>{if(screenSteerPointer!==e.pointerId)return;const r=document.getElementById('game').getBoundingClientRect();keys=(e.clientX-r.left<r.width/2)?-1:1;});
-window.addEventListener('pointerup',e=>{if(screenSteerPointer===e.pointerId){screenSteerPointer=null;keys=0}});
-window.addEventListener('pointercancel',e=>{if(screenSteerPointer===e.pointerId){screenSteerPointer=null;keys=0}});
 window.addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key)){keys=-1;e.preventDefault()}if(['ArrowRight','d','D'].includes(e.key)){keys=1;e.preventDefault()}if(e.key===' '){e.preventDefault();if(!run||dead)startGame();else{paused=!paused;document.getElementById('pause').textContent=paused?'▶ RESUME':'Ⅱ PAUSE';last=performance.now()}}if(e.key==='Escape'&&run){paused=!paused;document.getElementById('pause').textContent=paused?'▶ RESUME':'Ⅱ PAUSE';last=performance.now()}});window.addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key)&&keys===-1)keys=0;if(['ArrowRight','d','D'].includes(e.key)&&keys===1)keys=0});draw();
 })();
 </script>
