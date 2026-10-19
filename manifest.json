@@ -1,0 +1,15 @@
+{
+  "id": "/Panic/",
+  "name": "PANIC! Brainrot Edition",
+  "short_name": "PANIC!",
+  "description": "A fast brainrot arcade survival game.",
+  "start_url": "/Panic/",
+  "scope": "/Panic/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080e1c",
+  "theme_color": "#080e1c",
+  "icons": [
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
