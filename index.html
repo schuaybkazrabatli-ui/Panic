@@ -105,6 +105,8 @@ function startMusic(){
 }
 function stopMusic(){if(musicTimer){clearInterval(musicTimer);musicTimer=null}if(audioCtx&&musicMaster){musicMaster.gain.cancelScheduledValues(audioCtx.currentTime);musicMaster.gain.setTargetAtTime(0.0001,audioCtx.currentTime,0.06)}}
 function playLossJingle(){if(!soundOn||!audioCtx||!musicMaster)return;try{if(musicTimer){clearInterval(musicTimer);musicTimer=null}const now=audioCtx.currentTime;musicMaster.gain.cancelScheduledValues(now);musicMaster.gain.setTargetAtTime(0.0001,now,0.025);const notes=[196,174.61,146.83,130.81];notes.forEach((f,i)=>musicNote(f,0.28,0.075,'triangle',0.08+i*0.22));musicNote(98,0.72,0.055,'sine',0.76);setTimeout(()=>{if(soundOn&&audioCtx&&musicMaster&&dead){musicMaster.gain.cancelScheduledValues(audioCtx.currentTime);musicMaster.gain.setTargetAtTime(0.58,audioCtx.currentTime,0.12);musicStep=0;playMusicStep();musicTimer=setInterval(playMusicStep,220)}},1500)}catch(e){}}
+// Default sound state is ON; mobile browsers unlock actual audio on the first user gesture.
+document.getElementById('sound').textContent='♪ SOUND: ON';
 document.getElementById('sound').addEventListener('click',()=>{
   soundOn=!soundOn;document.getElementById('sound').textContent='♪ SOUND: '+(soundOn?'ON':'OFF');
   if(soundOn){try{startMusic()}catch(e){soundOn=false;document.getElementById('sound').textContent='♪ SOUND: OFF'}}else stopMusic();
